@@ -1,0 +1,45 @@
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('VIEWER', 'EDITOR', 'ADMIN');
+CREATE TYPE "ImportStatus" AS ENUM ('UPLOADED', 'VALIDATED', 'COMMITTED', 'FAILED');
+
+CREATE TABLE "User" (
+  "id" TEXT PRIMARY KEY,
+  "email" TEXT NOT NULL UNIQUE,
+  "name" TEXT NOT NULL,
+  "passwordHash" TEXT NOT NULL,
+  "role" "Role" NOT NULL,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL
+);
+
+CREATE TABLE "Product" (
+  "id" TEXT PRIMARY KEY,
+  "sku" TEXT NOT NULL,
+  "skuNormalized" TEXT NOT NULL UNIQUE,
+  "name" TEXT NOT NULL,
+  "color" TEXT NOT NULL,
+  "fabric" TEXT NOT NULL,
+  "lining" TEXT NOT NULL,
+  "releaseDate" TIMESTAMP(3),
+  "stock" INTEGER NOT NULL DEFAULT 0,
+  "weightKg" DOUBLE PRECISION NOT NULL,
+  "waterproof" BOOLEAN NOT NULL DEFAULT false,
+  "eco" BOOLEAN NOT NULL DEFAULT false,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL
+);
+
+CREATE TABLE "ImportJob" (
+  "id" TEXT PRIMARY KEY,
+  "fileName" TEXT NOT NULL,
+  "status" "ImportStatus" NOT NULL DEFAULT 'UPLOADED',
+  "uploadedById" TEXT NOT NULL,
+  "totalRows" INTEGER NOT NULL DEFAULT 0,
+  "validRows" INTEGER NOT NULL DEFAULT 0,
+  "invalidRows" INTEGER NOT NULL DEFAULT 0,
+  "rawCsv" TEXT NOT NULL,
+  "failureReportCsv" TEXT,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL,
+  CONSTRAINT "ImportJob_uploadedById_fkey" FOREIGN KEY ("uploadedById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
