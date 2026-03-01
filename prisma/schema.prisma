@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  VIEWER
+  EDITOR
+  ADMIN
+}
+
+enum ImportStatus {
+  UPLOADED
+  VALIDATED
+  COMMITTED
+  FAILED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  imports      ImportJob[]
+}
+
+model Product {
+  id             String   @id @default(cuid())
+  sku            String
+  skuNormalized  String   @unique
+  name           String
+  color          String
+  fabric         String
+  lining         String
+  releaseDate    DateTime?
+  stock          Int      @default(0)
+  weightKg       Float
+  waterproof     Boolean  @default(false)
+  eco            Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model ImportJob {
+  id              String   @id @default(cuid())
+  fileName        String
+  status          ImportStatus @default(UPLOADED)
+  uploadedById    String
+  uploadedBy      User     @relation(fields: [uploadedById], references: [id])
+  totalRows       Int      @default(0)
+  validRows       Int      @default(0)
+  invalidRows     Int      @default(0)
+  rawCsv          String
+  failureReportCsv String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
